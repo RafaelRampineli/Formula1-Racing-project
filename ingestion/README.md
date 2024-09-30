@@ -1,0 +1,1 @@
+Notebooks used to read raw data from Azure Data lake Gen2 Storage (ADLS) raw folder storage, transform it and save as a Parquet format on ADLS. 

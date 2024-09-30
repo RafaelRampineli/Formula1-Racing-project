@@ -1,0 +1,1 @@
+Notebooks used to set up and configure how Databricks access Azure Data Lake Gen2 storage.
