@@ -95,7 +95,7 @@ display(constructors_final_df)
 #constructors_final_df.write.mode("overwrite").parquet("f{processed_folder_path}/constructors")
 
 # Writing data as a table saving on Database f1_processed in the workspace. Using Managed Tables
-constructors_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.constructors")
+constructors_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.constructors")
 
 # COMMAND ----------
 

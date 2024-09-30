@@ -96,4 +96,4 @@ drivers_final_df = drivers_final_df.drop("url")
 #drivers_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/drivers")
 
 # Writing data as a table saving on Database f1_processed in the workspace. Using Managed Tables
-drivers_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.drivers")
+drivers_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.drivers")

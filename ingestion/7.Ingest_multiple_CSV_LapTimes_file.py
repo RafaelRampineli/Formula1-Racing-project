@@ -80,7 +80,11 @@ lap_times_df = add_ingestion_date(lap_times_df) \
 # Writing data as a table saving on Database f1_processed in the workspace. Using Managed Tables
 #lap_times_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.lap_times")
 
-overwrite_partition(lap_times_df, 'f1_processed', 'lap_times', 'race_id')
+#overwrite_partition(lap_times_df, 'f1_processed', 'lap_times', 'race_id')
+
+# Using Delta Lake:  input_df, db_name, table_name, folder_path, merge_condition, partition_column):
+merge_condition = 'tgt.driver_id = src.driver_id AND tgt.race_id = src.race_id AND tgt.lap = src.lap'
+merge_delta_data(lap_times_df, 'f1_processed','lap_times', processed_folder_path, merge_condition, 'race_id')
 
 # COMMAND ----------
 

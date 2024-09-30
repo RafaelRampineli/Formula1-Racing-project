@@ -111,7 +111,7 @@ races_final_df = races_selected_df.withColumnRenamed("raceId", "race_id") \
 #.parquet("f{processed_folder_path}/races")
 
 # Writing data as a table saving on Database f1_processed in the workspace. Using Managed Tables
-races_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.races")    
+races_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.races")    
 
 # COMMAND ----------
 
@@ -125,6 +125,8 @@ races_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_process
 # MAGIC Select * from f1_processed.races
 # MAGIC
 # MAGIC --display(spark.read.parquet(f"{processed_folder_path}/races"))
+# MAGIC --display(spark.read.format("delta").load(f"{processed_folder_path}/races"))
+# MAGIC
 
 # COMMAND ----------
 

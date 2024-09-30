@@ -9,6 +9,3 @@ LOCATION "/mnt/formula1555/processed";
 
 CREATE DATABASE IF NOT EXISTS f1_presentation
 LOCATION "/mnt/formula1555/presentation";
-
--- COMMAND ----------
-

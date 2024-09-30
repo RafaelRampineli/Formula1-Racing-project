@@ -119,7 +119,7 @@ circuits_final_df = add_ingestion_date(circuits_renamed_df) \
 # circuits_final_df.write.mode("overwrite").parquet(f"{processed_folder_path}/circuits")
 
 # Writing data as a table saving on Database f1_processed in the workspace. Using Managed Tables
-circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.circuits")
+circuits_final_df.write.mode("overwrite").format("delta").saveAsTable("f1_processed.circuits")
 
 # COMMAND ----------
 
@@ -129,7 +129,11 @@ circuits_final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_proc
 
 # COMMAND ----------
 
-display(spark.read.parquet(f"{processed_folder_path}/circuits"))
+# Parquet format
+#display(spark.read.parquet(f"{processed_folder_path}/circuits"))
+
+# Delta Lake format
+display(spark.read.format("delta").load(f"{processed_folder_path}/circuits"))
 
 # COMMAND ----------
 
@@ -139,3 +143,6 @@ display(spark.read.parquet(f"{processed_folder_path}/circuits"))
 # COMMAND ----------
 
 dbutils.notebook.exit("Success")
+
+# COMMAND ----------
+

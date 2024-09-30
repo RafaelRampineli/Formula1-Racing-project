@@ -66,6 +66,7 @@ qualifying_df = spark.read \
 # COMMAND ----------
 
 qualifying_df = add_ingestion_date(qualifying_df) \
+    .withColumnRenamed("qualifyId", "qualify_id") \
     .withColumnRenamed("qualifyingId", "qualifying_id") \
     .withColumnRenamed("driverId", "driver_id") \
     .withColumnRenamed("raceId", "race_id") \
@@ -86,7 +87,11 @@ qualifying_df = add_ingestion_date(qualifying_df) \
 # Writing data as a table saving on Database f1_processed in the workspace. Using Managed Tables
 #qualifying_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.qualifying")
 
-overwrite_partition(qualifying_df, 'f1_processed', 'qualifying', 'race_id')
+#overwrite_partition(qualifying_df, 'f1_processed', 'qualifying', 'race_id')
+
+# Using Delta Lake:  input_df, db_name, table_name, folder_path, merge_condition, partition_column):
+merge_condition = "tgt.qualify_id = src.qualify_id AND tgt.race_id = src.race_id"
+merge_delta_data(qualifying_df, 'f1_processed','qualifying', processed_folder_path, merge_condition, 'race_id')
 
 # COMMAND ----------
 

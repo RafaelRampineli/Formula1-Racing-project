@@ -86,11 +86,17 @@ results_final_df = add_ingestion_date(results_df) \
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Step 3 - Drop the unwanted columns
+# MAGIC ### Step 3 - Drop the unwanted columns and duplicate values
 
 # COMMAND ----------
 
 results_final_df = results_final_df.drop("statusId")
+
+# COMMAND ----------
+
+from pyspark.sql import Row
+
+results_final_df = results_final_df.dropDuplicates(['race_id','driver_id'])
 
 # COMMAND ----------
 
@@ -137,7 +143,12 @@ results_final_df = results_final_df.drop("statusId")
 
 # COMMAND ----------
 
-overwrite_partition(results_final_df, 'f1_processed', 'results', 'race_id')
+#overwrite_partition(results_final_df, 'f1_processed', 'results', 'race_id')
+
+# Using Delta Lake:  input_df, db_name, table_name, folder_path, merge_condition, partition_column):
+merge_condition = 'tgt.result_id = src.result_id AND tgt.race_id = src.race_id'
+merge_delta_data(results_final_df, 'f1_processed','results', processed_folder_path, merge_condition, 'race_id')
+
 
 # COMMAND ----------
 

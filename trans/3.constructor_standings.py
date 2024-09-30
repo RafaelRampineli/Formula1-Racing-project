@@ -27,7 +27,7 @@ var_filedate = dbutils.widgets.get("file_date")
 
 from pyspark.sql.functions import sum, when, count, col
 
-race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results") \
+race_results_df = spark.read.format("delta").load(f"{presentation_folder_path}/race_results") \
     .filter(f"file_date = '{var_filedate}'")
 
 race_year_list = df_column_to_list(race_results_df, 'race_year')
@@ -44,7 +44,7 @@ race_year_list = df_column_to_list(race_results_df, 'race_year')
 
 from pyspark.sql.functions import sum, when, count, col
 
-race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results") \
+race_results_df = spark.read.format("delta").load(f"{presentation_folder_path}/race_results") \
     .filter(col("race_year").isin(race_year_list))
     
 constructor_standing_df = race_results_df \
@@ -68,10 +68,17 @@ final_df = constructor_standing_df.withColumn("rank", rank().over(window))
 # Writing data as a table saving on Database f1_processed in the workspace. Using Managed Tables
 #final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_presentation.constructor_standings")
 
-overwrite_partition(final_df, 'f1_presentation', 'constructor_standings', 'race_year')
+# overwrite_partition(final_df, 'f1_presentation', 'constructor_standings', 'race_year')
+
+# Using Delta Lake:  input_df, db_name, table_name, folder_path, merge_condition, partition_column):
+merge_condition = "tgt.team = src.team AND tgt.race_year = src.race_year"
+merge_delta_data(final_df, 'f1_presentation','constructor_standings', presentation_folder_path, merge_condition, 'race_year')
 
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC select * from f1_presentation.constructor_standings
+
+# COMMAND ----------
+

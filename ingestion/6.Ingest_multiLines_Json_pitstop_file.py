@@ -81,7 +81,11 @@ pit_stops_df = add_ingestion_date(pit_stops_df) \
 # Writing data as a table saving on Database f1_processed in the workspace. Using Managed Tables
 # pit_stops_df.write.mode("overwrite").format("parquet").saveAsTable("f1_processed.pit_stops")
 
-overwrite_partition(pit_stops_df, 'f1_processed', 'pit_stops', 'race_id')
+#overwrite_partition(pit_stops_df, 'f1_processed', 'pit_stops', 'race_id')
+
+# Using Delta Lake:  input_df, db_name, table_name, folder_path, merge_condition, partition_column):
+merge_condition = 'tgt.driver_id = src.driver_id AND tgt.race_id = src.race_id AND tgt.stop = src.stop'
+merge_delta_data(pit_stops_df, 'f1_processed','pit_stops', processed_folder_path, merge_condition, 'race_id')
 
 # COMMAND ----------
 

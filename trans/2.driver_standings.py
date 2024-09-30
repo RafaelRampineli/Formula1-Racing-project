@@ -27,7 +27,7 @@ var_filedate = dbutils.widgets.get("file_date")
 
 from pyspark.sql.functions import sum, when, count, col
 
-race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results") \
+race_results_df = spark.read.format("delta").load(f"{presentation_folder_path}/race_results") \
     .filter(f"file_date = '{var_filedate}'")
 
 race_year_list = df_column_to_list(race_results_df, 'race_year')
@@ -42,11 +42,11 @@ race_year_list = df_column_to_list(race_results_df, 'race_year')
 
 # COMMAND ----------
 
-race_results_df = spark.read.parquet(f"{presentation_folder_path}/race_results") \
+race_results_df = spark.read.format("delta").load(f"{presentation_folder_path}/race_results") \
     .filter(col("race_year").isin(race_year_list))
 
 driver_standing_df = race_results_df \
-    .groupBy("race_year", "driver_name", "driver_nationality", "team") \
+    .groupBy("race_year", "driver_name", "driver_nationality") \
     .agg(sum("points").alias("total_points"),
          count(when(col("position") ==1, 1)).alias("wins"))    
 
@@ -68,9 +68,21 @@ final_df = driver_standing_df.withColumn("rank", rank().over(window))
 # Writing data as a table saving on Database f1_processed in the workspace. Using Managed Tables
 # final_df.write.mode("overwrite").format("parquet").saveAsTable("f1_presentation.driver_standings")
 
-overwrite_partition(final_df, 'f1_presentation', 'driver_standings', 'race_year')
+# overwrite_partition(final_df, 'f1_presentation', 'driver_standings', 'race_year')
+
+# Using Delta Lake:  input_df, db_name, table_name, folder_path, merge_condition, partition_column):
+merge_condition = "tgt.driver_name = src.driver_name AND tgt.race_year = src.race_year"
+merge_delta_data(final_df, 'f1_presentation','driver_standings', presentation_folder_path, merge_condition, 'race_year')
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select * from f1_presentation.driver_standings
+# MAGIC -- select driver_name, race_year, count(1) 
+# MAGIC -- from f1_presentation.driver_standings
+# MAGIC -- group by driver_name, race_year
+# MAGIC -- having count(1) > 1;
+# MAGIC
+# MAGIC --drop table f1_presentation.driver_standings
+# MAGIC
+# MAGIC -- select * from f1_presentation.driver_standings
+# MAGIC -- where driver_name = 'John Campbell-Jones' and race_year = 1963

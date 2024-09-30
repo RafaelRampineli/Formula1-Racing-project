@@ -8,7 +8,7 @@ def add_ingestion_date(input_df):
 
 # COMMAND ----------
 
-#Method 2: 
+#Method 2: SAVING ON PARQUET FORMAT
 #Use SaveAsTable to first insertion, and use InsertInto for subsequent insertions
 
 #Attention: 
@@ -31,6 +31,24 @@ def overwrite_partition(input_df, database_name, table_name, partition_column):
     output_df.write.mode("overwrite").insertInto(f"{database_name}.{table_name}")
   else:
     output_df.write.mode("append").partitionBy(f"{partition_column}").format("parquet").saveAsTable(f"{database_name}.{table_name}")
+
+# COMMAND ----------
+
+# Incremental LOADs using MERGE PYSPARK FOR DELTA LAKE
+def merge_delta_data(input_df, db_name, table_name, folder_path, merge_condition, partition_column):
+  spark.conf.set("spark.databricks.optimizer.dynamicPartitionPruning","true")
+
+  from delta.tables import DeltaTable
+  if (spark._jsparkSession.catalog().tableExists(f"{db_name}.{table_name}")):
+    deltaTable = DeltaTable.forPath(spark, f"{folder_path}/{table_name}")
+    deltaTable.alias("tgt").merge(
+        input_df.alias("src"),
+        merge_condition) \
+      .whenMatchedUpdateAll()\
+      .whenNotMatchedInsertAll()\
+      .execute()
+  else:
+    input_df.write.mode("overwrite").partitionBy(partition_column).format("delta").saveAsTable(f"{db_name}.{table_name}")
 
 # COMMAND ----------
 
